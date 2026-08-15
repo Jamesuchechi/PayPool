@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { HealthStatus } from '../types';
 
 interface HealthBannerProps {
@@ -13,7 +13,7 @@ export const HealthBanner: React.FC<HealthBannerProps> = ({ status }) => {
       padding: '12px 24px',
       display: 'flex',
       alignItems: 'center',
-      justify: 'space-between',
+      justifyContent: 'space-between',
       fontSize: '0.85rem'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-emerald)' }}>
