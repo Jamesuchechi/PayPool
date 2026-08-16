@@ -12,6 +12,7 @@ export interface Pool {
   payees: Payee[];
   totalReceivedETH: string;
   blockCreated: number;
+  txHash?: string;
 }
 
 export interface Deposit {
@@ -43,5 +44,26 @@ export interface HealthStatus {
   status: 'healthy' | 'degraded' | 'syncing';
 }
 
-export * from './auth';
+export type AppView =
+  | 'landing'
+  | 'dashboard'
+  | 'pools'
+  | 'pool-detail'
+  | 'my-earnings'
+  | 'analytics'
+  | 'notifications'
+  | 'profile'
+  | 'public-pay';
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  type: 'deposit' | 'withdrawal' | 'system' | 'pool_created';
+  poolAddress?: string;
+  txHash?: string;
+}
+
+export * from './auth';

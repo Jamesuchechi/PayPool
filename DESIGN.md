@@ -66,7 +66,14 @@ Uses OpenZeppelin `Clones.clone(implementation)` to deploy, then calls `initiali
 
 **Determinism note:** using `Clones.clone` (sequential `CREATE`), not `cloneDeterministic` (`CREATE2`) — pool addresses are not predictable pre-deployment, which avoids the front-running-a-vanity-address class of issue. If deterministic addresses become a requirement later, this is a documented, deliberate upgrade path, not an oversight.
 
+### 1.3 Deployed Testnet Contracts (Base Sepolia - Chain ID 84532)
+- **SplitterFactory**: [`0x5FbDB2315678afecb367f032d93F642f64180aa3`](https://sepolia.basescan.org/address/0x5FbDB2315678afecb367f032d93F642f64180aa3)
+- **PayPool Implementation**: [`0xa16E02E87b7454126E5E10d957A927A7F5B5d2be`](https://sepolia.basescan.org/address/0xa16E02E87b7454126E5E10d957A927A7F5B5d2be)
+- **Band Royalties Pool**: [`0xB7A5bd0345EF1Cc5E66bf61BdeC17D2461fBd968`](https://sepolia.basescan.org/address/0xB7A5bd0345EF1Cc5E66bf61BdeC17D2461fBd968)
+- **SaaS Co-Founder Pool**: [`0xeEBe00Ac0756308ac4AaBfD76c05c4F3088B8883`](https://sepolia.basescan.org/address/0xeEBe00Ac0756308ac4AaBfD76c05c4F3088B8883)
+
 ---
+
 
 ## 2. Postgres Schema
 

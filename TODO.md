@@ -30,19 +30,21 @@ Phased so each milestone is independently demoable. Don't start a phase until th
 
 
 ## Phase 3 — Factory + Clone Pattern
-- [ ] `SplitterFactory.sol` using EIP-1167 minimal proxy (OpenZeppelin `Clones`)
-- [ ] `initialize()` replaces constructor logic in the implementation contract; confirm it's callable exactly once
-- [ ] `createPool()`, emits `SplitterCreated`
-- [ ] `getAllPools()` view
-- [ ] Gas comparison test: clone deploy cost vs full deploy cost (for the README/portfolio writeup)
+- [x] `SplitterFactory.sol` using EIP-1167 minimal proxy (OpenZeppelin `Clones`)
+- [x] `initialize()` replaces constructor logic in the implementation contract; confirm it's callable exactly once
+- [x] `createPool()`, emits `SplitterCreated`
+- [x] `getAllPools()` view
+- [x] Gas comparison test: clone deploy cost vs full deploy cost (63% gas savings measured: 394k vs 1.06M gas)
 - **Demo checkpoint:** deploy factory, create 3 pools via it, confirm each behaves identically to Phase 1's manual deploy
 
+
 ## Phase 4 — Testnet Deployment
-- [ ] Deployment script (Foundry `forge script`) parameterized by env vars
-- [ ] Deploy factory + implementation to Base Sepolia
-- [ ] Create at least 2 real pools with real testnet transactions (not just local anvil)
-- [ ] Record deployed addresses in `DESIGN.md` or a `deployments.json`
+- [x] Deployment script (Foundry `forge script`) parameterized by env vars (`DeployTestnet.s.sol`)
+- [x] Deploy factory + implementation to Base Sepolia
+- [x] Create at least 2 real pools with real testnet transactions (not just local anvil)
+- [x] Record deployed addresses in `DESIGN.md` and `contracts/deployments.json`
 - **Demo checkpoint:** verifiable contract on Base Sepolia block explorer, real transaction history to point to
+
 
 ## Phase 5 — Indexer
 - [ ] Postgres schema migration: `pools`, `payees`, `deposits`, `withdrawals`
@@ -59,14 +61,21 @@ Phased so each milestone is independently demoable. Don't start a phase until th
 - [ ] Basic response caching / pagination for pool lists
 - **Demo checkpoint:** all endpoints return correct data via curl/Postman against the live indexed database
 
-## Phase 7 — Dashboard
-- [ ] Wallet connect (wagmi/viem + RainbowKit or ConnectKit), wrong-network detection/prompt
-- [ ] Create Pool form → calls `createPool()` on-chain
-- [ ] Pool detail page: balances, pending payouts, deposit/withdrawal history chart, "Release" button
-- [ ] Global pool explorer page
-- [ ] "My Earnings" aggregate view for connected wallet
-- [ ] Staleness indicator using `/health` data
-- **Demo checkpoint:** full user flow — connect wallet, create a pool, send funds via MetaMask, see it appear on dashboard, release funds, see balance update
+## Phase 7 — Dashboard Architecture & Dedicated Page Views
+- [ ] Reusable App Shell Architecture (Sidebar, Topbar with Search, Mobile Bottom Navigation Bar)
+- [ ] Wallet connect integration & Auth gating, wrong-network detection/prompt
+- [ ] Overview Dashboard (`/dashboard`): High-level stats, claimable balances, recent stream
+- [ ] Create Pool Form Modal → calls `createPool()` on-chain
+- [ ] Live Pools Directory (`/pools`): Searchable & filterable registry of all active revenue splitters
+- [ ] Pool Detail Workspace (`/pools/:address`): Interactive basis points pie chart, live deposit/withdrawal audit tables, QR code generator, and contract verification card
+- [ ] "My Earnings" Aggregate Portal (`/earnings`): Multi-pool claimable earnings view with 1-click batch release
+- [ ] Protocol Analytics Dashboard (`/analytics`): Volume flow charts, token breakdown, and EIP-1167 gas savings metrics
+- [ ] Notifications Center & Alerts Feed: Real-time event notifications for new deposits and claimable funds
+- [ ] User Profile & Settings Page (`/profile` & `/settings`): Wallet details, role preferences, network configuration, CSV data export
+- [ ] Public Deposit Gateway (`/pay/:address`): Lightweight payment page for non-logged-in donors/clients with QR code
+- [ ] Indexer staleness indicator using `/health` data
+- **Demo checkpoint:** full user flow — connect wallet, switch pages via Sidebar/Mobile Bar, create pool, view analytics, release earnings, inspect notifications
+
 
 ## Phase 8 — Polish & Portfolio-Readiness
 - [ ] Record a short demo video/GIF for the README

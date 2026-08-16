@@ -8,18 +8,24 @@ import {
   CheckCircle2,
   Copy,
   ArrowRight,
-  ArrowLeft
+  Bell,
+  Search,
+  User as UserIcon,
+  BarChart3
 } from 'lucide-react';
 
-import { User } from '../types/auth';
+import { User, AppView, HealthStatus } from '../types';
 
 interface HeaderProps {
-  currentView: 'landing' | 'dashboard';
-  onNavigate: (view: 'landing' | 'dashboard') => void;
+  currentView: AppView;
+  onNavigate: (view: AppView) => void;
   onOpenCreateModal: () => void;
   onOpenAuthModal: () => void;
   user?: User | null;
   onSignOut?: () => void;
+  healthStatus?: HealthStatus;
+  unreadNotificationCount?: number;
+  onOpenSearch?: (query: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,10 +34,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCreateModal,
   onOpenAuthModal,
   user,
-  onSignOut
+  onSignOut,
+  healthStatus,
+  unreadNotificationCount = 0,
+  onOpenSearch
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleCopyAddress = (addr: string) => {
     navigator.clipboard.writeText(addr);
@@ -50,298 +60,175 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      if (onOpenSearch) onOpenSearch(searchQuery);
+      onNavigate('pools');
+    }
+  };
+
   return (
-    <header style={{
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-      background: 'rgba(6, 9, 14, 0.9)',
-      backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid var(--border-color)',
-      padding: '14px 24px'
-    }}>
-      <div className="container-xl" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 0 }}>
-        {/* Left: Brand Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+    <header className="sticky top-0 z-40 bg-slate-950/85 backdrop-blur-xl border-b border-slate-800/80 px-4 md:px-6 py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        {/* Left: Brand Logo & Network Status */}
+        <div className="flex items-center gap-3">
           <div
             onClick={() => onNavigate('landing')}
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <div style={{
-              background: 'var(--gradient-brand)',
-              padding: '8px',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(56, 189, 248, 0.3)'
-            }}>
-              <Layers size={22} color="white" />
+            <div className="bg-gradient-to-tr from-cyan-500 to-blue-600 p-2 rounded-xl text-white shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform">
+              <Layers size={20} />
             </div>
-            <div>
-              <span className="gradient-text" style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.5px' }}>
-                PayPool
-              </span>
-            </div>
+            <span className="bg-gradient-to-r from-white via-cyan-100 to-cyan-400 bg-clip-text text-transparent font-extrabold text-xl tracking-tight">
+              PayPool
+            </span>
           </div>
 
-          {/* Network Pill in Dashboard view */}
-          {currentView === 'dashboard' && (
-            <span style={{
-              background: 'rgba(56, 189, 248, 0.1)',
-              color: 'var(--accent-primary)',
-              padding: '3px 10px',
-              borderRadius: '12px',
-              fontSize: '11px',
-              fontWeight: 700,
-              border: '1px solid rgba(56, 189, 248, 0.25)',
-              fontFamily: 'var(--font-mono)'
-            }}>
-              Base Sepolia
-            </span>
+          {currentView !== 'landing' && (
+            <div className="hidden sm:flex items-center gap-2 ml-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono">
+                Base Sepolia
+              </span>
+
+              {healthStatus && (
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Synced #{healthStatus.lastIndexedBlock}
+                </span>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Center: LANDING PAGE MARKETING NAV LINKS vs DASHBOARD BACK BUTTON */}
+        {/* Center: Search input in app views OR section nav on landing */}
         {currentView === 'landing' ? (
-          <nav style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-            <button
-              onClick={() => scrollToSection('features')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
-            >
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-slate-400">
+            <button onClick={() => scrollToSection('features')} className="hover:text-cyan-300 transition-colors">
               Features
             </button>
-            <button
-              onClick={() => scrollToSection('how-it-works')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
-            >
+            <button onClick={() => scrollToSection('how-it-works')} className="hover:text-cyan-300 transition-colors">
               How It Works
             </button>
-            <button
-              onClick={() => scrollToSection('simulator')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
-            >
+            <button onClick={() => scrollToSection('simulator')} className="hover:text-cyan-300 transition-colors">
               Simulator
             </button>
-            <button
-              onClick={() => scrollToSection('faq')}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', transition: 'color 0.2s' }}
-            >
+            <button onClick={() => scrollToSection('faq')} className="hover:text-cyan-300 transition-colors">
               FAQ
             </button>
           </nav>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              onClick={() => onNavigate('landing')}
-              style={{
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-secondary)',
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <ArrowLeft size={14} />
-              Back to Product Overview
-            </button>
-          </div>
+          <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xs relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search pool by name or address 0x..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-900/80 border border-slate-800 rounded-xl pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+            />
+          </form>
         )}
 
         {/* Right: Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="flex items-center gap-2.5">
+          {currentView !== 'landing' && (
+            <button
+              onClick={() => onNavigate('notifications')}
+              className="relative p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              title="Notifications"
+            >
+              <Bell size={18} />
+              {unreadNotificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-bold flex items-center justify-center">
+                  {unreadNotificationCount}
+                </span>
+              )}
+            </button>
+          )}
+
           {currentView === 'landing' ? (
             user ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => onNavigate('dashboard')}
-                  style={{ padding: '8px 18px', fontSize: '0.88rem', borderRadius: '10px' }}
-                >
-                  My Dashboard
-                  <ArrowRight size={16} />
-                </button>
-                <div style={{ position: 'relative' }}>
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '5px 10px 5px 6px',
-                      borderRadius: '12px',
-                      background: 'var(--bg-tertiary)',
-                      border: '1px solid var(--border-hover)',
-                      cursor: 'pointer',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.85rem',
-                      fontWeight: 600
-                    }}
-                  >
-                    <img
-                      src={user.avatarUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=user'}
-                      alt={user.name}
-                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--accent-primary)' }}
-                    />
-                    <ChevronDown size={14} color="var(--text-muted)" />
-                  </button>
-
-                  {showDropdown && (
-                    <div style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: 'calc(100% + 8px)',
-                      width: '200px',
-                      background: 'rgba(13, 19, 32, 0.95)',
-                      backdropFilter: 'blur(16px)',
-                      border: '1px solid var(--border-hover)',
-                      borderRadius: '16px',
-                      padding: '12px',
-                      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.7)',
-                      zIndex: 100
-                    }}>
-                      <div style={{ padding: '6px 8px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: '6px' }}>
-                        <div style={{ fontSize: '0.82rem', fontWeight: 700 }}>{user.name}</div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{user.email || user.address}</div>
-                      </div>
-                      {onSignOut && (
-                        <button
-                          onClick={() => { setShowDropdown(false); onSignOut(); }}
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', border: 'none', color: '#f87171', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
-                        >
-                          <LogOut size={14} />
-                          Sign Out
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <button
+                onClick={() => onNavigate('dashboard')}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs md:text-sm shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all flex items-center gap-1.5"
+              >
+                <span>Launch App</span>
+                <ArrowRight size={16} />
+              </button>
             ) : (
               <button
-                className="btn btn-primary"
                 onClick={onOpenAuthModal}
-                style={{ padding: '8px 20px', fontSize: '0.88rem', borderRadius: '10px' }}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs md:text-sm shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all flex items-center gap-1.5"
               >
                 <Wallet size={16} />
-                Sign In / Get Started
+                <span>Sign In / Connect</span>
               </button>
             )
           ) : (
             <>
-              {/* Dashboard Actions: Create Pool + User Profile */}
               <button
-                id="btn-create-pool"
-                className="btn btn-primary"
                 onClick={onOpenCreateModal}
-                style={{ padding: '8px 18px', fontSize: '0.88rem', borderRadius: '10px' }}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold text-xs md:text-sm shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 transition-all flex items-center gap-1.5"
               >
                 <PlusCircle size={16} />
-                Create Pool
+                <span className="hidden sm:inline">Create Pool</span>
               </button>
 
               {user ? (
-                <div style={{ position: 'relative' }}>
+                <div className="relative">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '5px 12px 5px 6px',
-                      borderRadius: '12px',
-                      background: 'var(--bg-tertiary)',
-                      border: '1px solid var(--border-hover)',
-                      cursor: 'pointer',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.85rem',
-                      fontWeight: 600
-                    }}
+                    className="flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 hover:border-slate-700 transition-colors"
                   >
                     <img
                       src={user.avatarUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=user'}
                       alt={user.name}
-                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '2px solid var(--accent-primary)' }}
+                      className="w-7 h-7 rounded-full border border-cyan-400"
                     />
-                    <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 700, lineHeight: 1.2 }}>{user.name}</div>
-                    </div>
-                    <ChevronDown size={14} color="var(--text-muted)" />
+                    <span className="hidden sm:inline text-xs font-semibold max-w-[100px] truncate">
+                      {user.name}
+                    </span>
+                    <ChevronDown size={14} className="text-slate-400" />
                   </button>
 
                   {showDropdown && (
-                    <div style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: 'calc(100% + 8px)',
-                      width: '220px',
-                      background: 'rgba(13, 19, 32, 0.95)',
-                      backdropFilter: 'blur(16px)',
-                      border: '1px solid var(--border-hover)',
-                      borderRadius: '16px',
-                      padding: '12px',
-                      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.7)',
-                      zIndex: 100
-                    }}>
-                      <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', marginBottom: '8px' }}>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Account Role
-                        </div>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'capitalize' }}>
-                          {user.role}
-                        </div>
+                    <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-slate-900/95 backdrop-blur-xl border border-slate-800 p-2 shadow-2xl z-50 text-xs space-y-1">
+                      <div className="p-2 border-b border-slate-800 mb-1">
+                        <p className="font-bold text-slate-100">{user.name}</p>
+                        <p className="text-[11px] text-cyan-400 capitalize">{user.role} Account</p>
                       </div>
+
+                      <button
+                        onClick={() => { setShowDropdown(false); onNavigate('profile'); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 transition-colors text-left"
+                      >
+                        <UserIcon size={14} />
+                        Profile Settings
+                      </button>
+
+                      <button
+                        onClick={() => { setShowDropdown(false); onNavigate('analytics'); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 transition-colors text-left"
+                      >
+                        <BarChart3 size={14} />
+                        Analytics
+                      </button>
 
                       {user.address && (
                         <button
                           onClick={() => handleCopyAddress(user.address!)}
-                          style={{
-                            width: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--text-secondary)',
-                            fontSize: '0.82rem',
-                            cursor: 'pointer',
-                            textAlign: 'left'
-                          }}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-slate-300 hover:bg-slate-800 transition-colors text-left"
                         >
                           <span>Copy Address</span>
-                          {copied ? <CheckCircle2 size={14} color="var(--accent-emerald)" /> : <Copy size={14} />}
+                          {copied ? <CheckCircle2 size={14} className="text-emerald-400" /> : <Copy size={14} />}
                         </button>
                       )}
 
                       {onSignOut && (
                         <button
-                          onClick={() => {
-                            setShowDropdown(false);
-                            onSignOut();
-                          }}
-                          style={{
-                            width: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            color: '#f87171',
-                            fontSize: '0.82rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            marginTop: '8px'
-                          }}
+                          onClick={() => { setShowDropdown(false); onSignOut(); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors text-left font-semibold mt-1"
                         >
                           <LogOut size={14} />
                           Sign Out
@@ -352,13 +239,11 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               ) : (
                 <button
-                  id="btn-connect-wallet"
-                  className="btn btn-secondary"
                   onClick={onOpenAuthModal}
-                  style={{ padding: '8px 16px', fontSize: '0.88rem', borderRadius: '10px' }}
+                  className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 hover:bg-slate-800 font-medium text-xs md:text-sm flex items-center gap-1.5"
                 >
                   <Wallet size={16} />
-                  Sign In
+                  <span>Connect</span>
                 </button>
               )}
             </>

@@ -1,0 +1,31 @@
+{
+  "network": "Base Sepolia",
+  "chainId": 84532,
+  "rpcUrl": "https://sepolia.base.org",
+  "blockExplorer": "https://sepolia.basescan.org",
+  "factory": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "implementation": "0xa16E02E87b7454126E5E10d957A927A7F5B5d2be",
+  "pools": [
+    {
+      "name": "Band Royalties Splitter",
+      "address": "0xB7A5bd0345EF1Cc5E66bf61BdeC17D2461fBd968",
+      "creator": "0x7aC9d1B48e6f02CA7715be39db2C0a9e4d5c3f41",
+      "payees": [
+        { "address": "0x7aC9d1B48e6f02CA7715be39db2C0a9e4d5c3f41", "shares": 4000 },
+        { "address": "0x9bE12c3d4e5f6A7b8C9d0e1F2a3b4C5d6E7f04D7", "shares": 3000 },
+        { "address": "0x1D772C3D4E5f6A7b8c9d0e1F2a3b4C5D6E7FAe30", "shares": 2000 },
+        { "address": "0xc0fF2c3D4e5F6A7b8C9d0E1F2A3b4C5D6E7F82ab", "shares": 1000 }
+      ]
+    },
+    {
+      "name": "SaaS Co-Founder Splitter",
+      "address": "0xeEBe00Ac0756308ac4AaBfD76c05c4F3088B8883",
+      "creator": "0x7aC9d1B48e6f02CA7715be39db2C0a9e4d5c3f41",
+      "payees": [
+        { "address": "0x7aC9d1B48e6f02CA7715be39db2C0a9e4d5c3f41", "shares": 5000 },
+        { "address": "0x9bE12c3d4e5f6A7b8C9d0e1F2a3b4C5d6E7f04D7", "shares": 3500 },
+        { "address": "0x1D772C3D4E5f6A7b8c9d0e1F2a3b4C5D6E7FAe30", "shares": 1500 }
+      ]
+    }
+  ]
+}
