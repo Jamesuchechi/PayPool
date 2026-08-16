@@ -47,42 +47,46 @@ Phased so each milestone is independently demoable. Don't start a phase until th
 
 
 ## Phase 5 — Indexer
-- [ ] Postgres schema migration: `pools`, `payees`, `deposits`, `withdrawals`
-- [ ] Event listener: poll `eth_getLogs` for factory + all known pool addresses
-- [ ] Idempotent writes via `(tx_hash, log_index)` unique constraint
-- [ ] Backfill-on-startup logic
-- [ ] N-confirmation delay before committing events
-- [ ] `/health` endpoint reporting sync status
+- [x] Postgres schema migration: `pools`, `payees`, `deposits`, `withdrawals` (`schema.sql` + SQLAlchemy `init_db`)
+- [x] Event listener: poll `eth_getLogs` for factory + all known pool addresses (`indexer_service.py`)
+- [x] Idempotent writes via `(tx_hash, log_index)` unique constraint
+- [x] Backfill-on-startup logic
+- [x] N-confirmation delay before committing events (`confirmation_depth`)
+- [x] `/health` endpoint reporting sync status
 - **Demo checkpoint:** indexer running against Phase 4's live testnet pools, Postgres reflects real deposit/withdrawal history within one poll interval
 
+
 ## Phase 6 — REST API
-- [ ] `GET /pools`, `GET /pools/{address}`, `GET /pools/{address}/deposits`, `GET /pools/{address}/withdrawals`
-- [ ] `GET /payees/{address}/earnings`
-- [ ] Basic response caching / pagination for pool lists
+- [x] `GET /pools`, `GET /pools/{address}`, `GET /pools/{address}/deposits`, `GET /pools/{address}/withdrawals`
+- [x] `GET /payees/{address}/earnings`
+- [x] Basic response caching / pagination for pool lists
 - **Demo checkpoint:** all endpoints return correct data via curl/Postman against the live indexed database
 
+
 ## Phase 7 — Dashboard Architecture & Dedicated Page Views
-- [ ] Reusable App Shell Architecture (Sidebar, Topbar with Search, Mobile Bottom Navigation Bar)
-- [ ] Wallet connect integration & Auth gating, wrong-network detection/prompt
-- [ ] Overview Dashboard (`/dashboard`): High-level stats, claimable balances, recent stream
-- [ ] Create Pool Form Modal → calls `createPool()` on-chain
-- [ ] Live Pools Directory (`/pools`): Searchable & filterable registry of all active revenue splitters
-- [ ] Pool Detail Workspace (`/pools/:address`): Interactive basis points pie chart, live deposit/withdrawal audit tables, QR code generator, and contract verification card
-- [ ] "My Earnings" Aggregate Portal (`/earnings`): Multi-pool claimable earnings view with 1-click batch release
-- [ ] Protocol Analytics Dashboard (`/analytics`): Volume flow charts, token breakdown, and EIP-1167 gas savings metrics
-- [ ] Notifications Center & Alerts Feed: Real-time event notifications for new deposits and claimable funds
-- [ ] User Profile & Settings Page (`/profile` & `/settings`): Wallet details, role preferences, network configuration, CSV data export
-- [ ] Public Deposit Gateway (`/pay/:address`): Lightweight payment page for non-logged-in donors/clients with QR code
-- [ ] Indexer staleness indicator using `/health` data
+- [x] Reusable App Shell Architecture (Sidebar, Topbar with Search, Mobile Bottom Navigation Bar)
+- [x] Wallet connect integration & Auth gating, wrong-network detection/prompt
+- [x] Overview Dashboard (`/dashboard`): High-level stats, claimable balances, recent stream
+- [x] Create Pool Form Modal → calls `createPool()` on-chain
+- [x] Live Pools Directory (`/pools`): Searchable & filterable registry of all active revenue splitters
+- [x] Pool Detail Workspace (`/pools/:address`): Interactive basis points pie chart, live deposit/withdrawal audit tables, QR code generator, and contract verification card
+- [x] "My Earnings" Aggregate Portal (`/earnings`): Multi-pool claimable earnings view with 1-click batch release
+- [x] Protocol Analytics Dashboard (`/analytics`): Volume flow charts, token breakdown, and EIP-1167 gas savings metrics
+- [x] Notifications Center & Alerts Feed: Real-time event notifications for new deposits and claimable funds
+- [x] User Profile & Settings Page (`/profile` & `/settings`): Wallet details, role preferences, network configuration, CSV data export
+- [x] Public Deposit Gateway (`/pay/:address`): Lightweight payment page for non-logged-in donors/clients with QR code
+- [x] Indexer staleness indicator using `/health` data
 - **Demo checkpoint:** full user flow — connect wallet, switch pages via Sidebar/Mobile Bar, create pool, view analytics, release earnings, inspect notifications
 
 
+
 ## Phase 8 — Polish & Portfolio-Readiness
-- [ ] Record a short demo video/GIF for the README
-- [ ] Finalize all docs (this file, ARCHITECTURE, SECURITY, DESIGN) to reflect what was actually built vs originally planned
-- [ ] Gas report + test coverage report committed
-- [ ] Clean up deployment scripts so a stranger can redeploy from scratch following the README alone
+- [x] Record a short demo video/GIF for the README
+- [x] Finalize all docs (`README.md`, `ARCHITECTURE.md`, `SECURITY.md`, `DESIGN.md`, `TODO.md`)
+- [x] Gas report (63.1% EIP-1167 savings) + 26-test coverage report committed
+- [x] Clean up deployment scripts so a stranger can redeploy from scratch following the README alone
 - **Demo checkpoint:** a friend with no context can clone the repo and deploy their own pool in under 15 minutes using only the docs
+
 
 ## Stretch (post-v1, not required for portfolio completeness)
 - [ ] Subgraph-based indexing as an alternative to the custom indexer
