@@ -1,0 +1,61 @@
+services:
+  # Local PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: paypool-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: paypool
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./indexer/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d paypool']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis for ARQ Worker Queue
+  redis:
+    image: redis:7-alpine
+    container_name: paypool-redis
+    restart: unless-stopped
+    ports:
+      - '6381:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+
+  # Indexer Service (FastAPI REST API + Event Poller)
+  indexer:
+    build:
+      context: ./indexer
+      dockerfile: Dockerfile
+    container_name: paypool-indexer
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    environment:
+      - RPC_URL=${RPC_URL:-https://sepolia.base.org}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://postgres:postgres@db:5432/paypool}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - FACTORY_ADDRESS=${FACTORY_ADDRESS:-0x0000000000000000000000000000000000000000}
+      - CHAIN_ID=${CHAIN_ID:-84532}
+      - CONFIRMATION_DEPTH=${CONFIRMATION_DEPTH:-5}
+      - POLL_INTERVAL_SECONDS=${POLL_INTERVAL_SECONDS:-15}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local

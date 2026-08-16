@@ -42,3 +42,6 @@ export interface HealthStatus {
   lagSeconds: number;
   status: 'healthy' | 'degraded' | 'syncing';
 }
+
+export * from './auth';
+

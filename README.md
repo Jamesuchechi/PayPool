@@ -35,20 +35,37 @@ Every deposit and withdrawal is an on-chain event. The dashboard reads those eve
 - [`TODO.md`](./TODO.md) — phased build plan
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — dev setup and conventions
 
-## Quickstart
+## Quickstart & Docker Setup
 
-> Contracts, indexer, and frontend each have their own setup — full instructions land in `CONTRIBUTING.md` as each piece is built. This section will be filled in as the implementation phases in `TODO.md` complete.
+### 1. Local Database & Services (Docker)
+Start the local PostgreSQL 16 database and Redis services with auto-initialized schema:
+```bash
+# Start PostgreSQL (port 5432) and Redis (port 6381)
+docker compose up -d db redis
 
+# Verify PostgreSQL connection and initialized schema tables
+docker compose exec db psql -U postgres -d paypool -c "\dt"
+```
+
+### 2. Environment Configuration
+Copy `.env.example` to set up database connections (supports local Docker PostgreSQL or Neon Cloud PostgreSQL):
+```bash
+cp .env.example .env
+cp indexer/.env.example indexer/.env
+```
+
+### 3. Service Components
 ```bash
 # Contracts
-cd contracts && forge install && forge test
+cd contracts && forge test
 
 # Indexer
-cd indexer && pip install -r requirements.txt && arq worker.WorkerSettings
+cd indexer && pip install -r requirements.txt
 
 # Dashboard
 cd dashboard && npm install && npm run dev
 ```
+
 
 ## Status
 

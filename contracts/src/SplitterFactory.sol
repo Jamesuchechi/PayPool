@@ -13,8 +13,11 @@ contract SplitterFactory is ISplitterFactory {
     address[] private _allPools;
 
     constructor() {
-        implementation = address(new PayPool());
+        address[] memory emptyPayees;
+        uint256[] memory emptyShares;
+        implementation = address(new PayPool(emptyPayees, emptyShares));
     }
+
 
     function createPool(
         address[] calldata payees,

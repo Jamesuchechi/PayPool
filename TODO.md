@@ -11,21 +11,23 @@ Phased so each milestone is independently demoable. Don't start a phase until th
 - **Demo checkpoint:** empty scaffolds run/build/test with no errors
 
 ## Phase 1 — Core Contract (single instance, no factory yet)
-- [ ] `PayPool.sol`: constructor takes payees[] + shares[], validates inputs (length match, no zero addresses, no duplicates, shares sum correctly, min 2 / max 20 payees)
-- [ ] `receive()` for ETH deposits, emits `PaymentReceived`
-- [ ] `depositERC20(token, amount)`, emits `PaymentReceived`
-- [ ] `release(payee, token)` pull withdrawal, emits `PaymentReleased`
-- [ ] View functions: `pendingPayment`, `totalReceived`, `getPayees`, `getShares`
-- [ ] Unit tests: happy path deposit + withdraw for both ETH and a mock ERC-20
+- [x] `PayPool.sol`: constructor takes payees[] + shares[], validates inputs (length match, no zero addresses, no duplicates, shares sum correctly, min 2 / max 20 payees)
+- [x] `receive()` for ETH deposits, emits `PaymentReceived`
+- [x] `depositERC20(token, amount)`, emits `PaymentReceived`
+- [x] `release(payee, token)` pull withdrawal, emits `PaymentReleased`
+- [x] View functions: `pendingPayment`, `totalReceived`, `getPayees`, `getShares`
+- [x] Unit tests: happy path deposit + withdraw for both ETH and a mock ERC-20
 - **Demo checkpoint:** deploy manually via script, send test ETH, call `release()`, confirm correct payout
 
+
 ## Phase 2 — Contract Hardening
-- [ ] `ReentrancyGuard` on `release()`
-- [ ] `SafeERC20` for all token transfers
-- [ ] Fuzz tests: share math invariant (`totalReceived == totalReleased + sum(pending)`) across randomized deposit/withdraw sequences
-- [ ] Edge case tests: zero deposits, single payee attempting >100% claim, repeated release calls, release with zero pending balance
-- [ ] Slither run, findings triaged and documented
+- [x] `ReentrancyGuard` on `release()`
+- [x] `SafeERC20` for all token transfers
+- [x] Fuzz tests: share math invariant (`totalReceived == totalReleased + sum(pending)`) across randomized deposit/withdraw sequences
+- [x] Edge case tests: zero deposits, single payee attempting >100% claim, repeated release calls, release with zero pending balance
+- [x] Slither run, findings triaged and documented
 - **Demo checkpoint:** full test suite green, fuzz run at high iteration count with no invariant break
+
 
 ## Phase 3 — Factory + Clone Pattern
 - [ ] `SplitterFactory.sol` using EIP-1167 minimal proxy (OpenZeppelin `Clones`)

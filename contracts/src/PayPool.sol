@@ -1,13 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/IPayPool.sol";
 
 /**
  * @title PayPool
- * @notice Cloned minimal proxy revenue splitter supporting ETH and ERC20 pull payouts.
+ * @notice Hardened implementation contract for autonomous ETH and ERC20 revenue splitting.
+ * @dev Uses OpenZeppelin ReentrancyGuard and SafeERC20 for robust security.
  */
-contract PayPool is IPayPool {
+contract PayPool is IPayPool, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     uint256 public constant TOTAL_SHARE_UNITS = 10_000;
 
     bool private _initialized;
@@ -20,24 +26,37 @@ contract PayPool is IPayPool {
     mapping(address => uint256) private _totalReleased;
     mapping(address => mapping(address => uint256)) private _released; // token => payee => amount
 
-    modifier initializer() {
-        require(!_initialized, "PayPool: already initialized");
-        _initialized = true;
-        _;
+    /**
+     * @notice Single-instance constructor (for standalone Phase 1 deployments).
+     */
+    constructor(address[] memory payees, uint256[] memory shares) {
+        if (payees.length > 0) {
+            _initialized = true;
+            _initialize(payees, shares);
+        }
     }
 
-    function initialize(address[] calldata payees, uint256[] calldata shares) external initializer {
-        require(payees.length == shares.length, "PayPool: length mismatch");
-        require(payees.length >= 2 && payees.length <= 20, "PayPool: payee count out of bounds");
+    /**
+     * @notice Initializer for clone instances (Phase 3 factory deployment).
+     */
+    function initialize(address[] calldata payees, uint256[] calldata shares) external override {
+        if (_initialized) revert AlreadyInitialized();
+        _initialized = true;
+        _initialize(payees, shares);
+    }
+
+    function _initialize(address[] memory payees, uint256[] memory shares) internal {
+        if (payees.length != shares.length) revert LengthMismatch();
+        if (payees.length < 2 || payees.length > 20) revert InvalidPayeeCount();
 
         uint256 total = 0;
         for (uint256 i = 0; i < payees.length; i++) {
             address payee = payees[i];
             uint256 share = shares[i];
 
-            require(payee != address(0), "PayPool: zero payee address");
-            require(_sharesOf[payee] == 0, "PayPool: duplicate payee");
-            require(share > 0, "PayPool: zero shares");
+            if (payee == address(0)) revert ZeroAddressPayee();
+            if (_sharesOf[payee] != 0) revert DuplicatePayee(payee);
+            if (share == 0) revert ZeroShares();
 
             _payees.push(payee);
             _shares.push(share);
@@ -45,39 +64,56 @@ contract PayPool is IPayPool {
             total += share;
         }
 
-        require(total == TOTAL_SHARE_UNITS, "PayPool: shares must sum to 10000");
+        if (total != TOTAL_SHARE_UNITS) revert InvalidTotalShares(total);
         _totalShares = total;
     }
 
+    /**
+     * @notice Deposit native ETH into the revenue pool.
+     */
     receive() external payable override {
         _totalReceived[address(0)] += msg.value;
         emit PaymentReceived(msg.sender, address(0), msg.value);
     }
 
+    /**
+     * @notice Deposit an ERC20 token into the revenue pool.
+     */
     function depositERC20(address token, uint256 amount) external override {
-        require(token != address(0), "PayPool: invalid token");
-        require(amount > 0, "PayPool: zero deposit");
+        if (token == address(0)) revert InvalidToken();
+        if (amount == 0) revert ZeroDeposit();
+
         _totalReceived[token] += amount;
+
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+
         emit PaymentReceived(msg.sender, token, amount);
     }
 
-    function release(address payee, address token) external override {
+    /**
+     * @notice Pull-based withdrawal for a payee's earned share of ETH or ERC20.
+     * @dev Protected by ReentrancyGuard and SafeERC20.
+     */
+    function release(address payee, address token) external override nonReentrant {
         uint256 payment = pendingPayment(payee, token);
-        require(payment > 0, "PayPool: no pending funds");
+        if (payment == 0) revert NoPendingPayment();
 
         _released[token][payee] += payment;
         _totalReleased[token] += payment;
 
         if (token == address(0)) {
-            (bool success, ) = payee.call{value: payment}("");
-            require(success, "PayPool: ETH transfer failed");
+            (bool ok, ) = payable(payee).call{value: payment}("");
+            if (!ok) revert ETHTransferFailed();
         } else {
-            // ERC20 transfer placeholder
+            IERC20(token).safeTransfer(payee, payment);
         }
 
         emit PaymentReleased(payee, token, payment);
     }
 
+    /**
+     * @notice Calculate pending claimable payment for a payee and token.
+     */
     function pendingPayment(address payee, address token) public view override returns (uint256) {
         if (_sharesOf[payee] == 0) return 0;
         uint256 totalReceivedForToken = _totalReceived[token];
@@ -104,5 +140,13 @@ contract PayPool is IPayPool {
 
     function totalShares() external view override returns (uint256) {
         return _totalShares;
+    }
+
+    function sharesOf(address payee) external view returns (uint256) {
+        return _sharesOf[payee];
+    }
+
+    function released(address payee, address token) external view returns (uint256) {
+        return _released[token][payee];
     }
 }
